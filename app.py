@@ -1,16 +1,32 @@
 import os
-from PIL import Image
-import pytesseract
 import streamlit as st
+import requests
+from PIL import Image
+import io
 
-# Configure Tesseract path if necessary
-# pytesseract.pytesseract.tesseract_cmd = r'<full_path_to_your_tesseract_executable>'
+# Set up OCR.Space API key
+OCR_SPACE_API_KEY = os.getenv("OCR_SPACE_API_KEY", "K85999022988957")  # Replace 'your_api_key_here' with your actual key
 
 # Define the OCR function
 def perform_ocr(image):
-    # Use Tesseract to do OCR on the image
-    text = pytesseract.image_to_string(image)
-    return text
+    # Convert the image to bytes
+    buffered = io.BytesIO()
+    image.save(buffered, format="PNG")
+    img_bytes = buffered.getvalue()
+
+    # Send the request to OCR.Space API
+    response = requests.post(
+        "https://api.ocr.space/parse/image",
+        files={"image": img_bytes},
+        data={"apikey": OCR_SPACE_API_KEY},
+    )
+    
+    # Check the response and parse the text
+    result = response.json()
+    if result.get("IsErroredOnProcessing"):
+        return "Error: " + result.get("ErrorMessage", "Unknown error")
+    
+    return result["ParsedResults"][0]["ParsedText"]
 
 # Streamlit app layout and functionality
 st.title("Image OCR Application")
