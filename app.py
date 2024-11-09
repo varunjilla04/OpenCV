@@ -1,40 +1,34 @@
-import os
-import io
 import requests
 from PIL import Image
-import pytesseract
 import streamlit as st
-
-# Configure Tesseract path if necessary
-# pytesseract.pytesseract.tesseract_cmd = r'<full_path_to_your_tesseract_executable>'
+from io import BytesIO
 
 # Define the OCR function
 def perform_ocr(image):
-    # Convert the image to bytes
-    buffered = io.BytesIO()
-    image.save(buffered, format="PNG")
-    img_bytes = buffered.getvalue()
+    # Convert the image to bytes and manually set the file extension
+    img_bytes = BytesIO()
+    image.save(img_bytes, format="PNG")  # You can choose "JPEG" or "PNG"
+    img_bytes.seek(0)
 
-    # Send the request to OCR.Space API
+    # Specify the correct file type
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    
+    # Send the request with the file as bytes and the correct extension
     try:
         response = requests.post(
             "https://api.ocr.space/parse/image",
-            files={"image": img_bytes},
-            data={"apikey": "K85999022988957"}  # Replace with your actual API key
+            files={"image": ("image.png", img_bytes, "image/png")},  # Explicitly setting the file type
+            data={"apikey": "K85999022988957"}
         )
-        response.raise_for_status()  # Check for HTTP errors
-
-        # Check the API response
+        response.raise_for_status()  # Will raise an exception for a 4xx or 5xx error
         result = response.json()
-
-        # If OCR failed or the response is in an unexpected format, handle it
+        
         if result.get("IsErroredOnProcessing"):
-            error_message = result.get("ErrorMessage", "Unknown error")
-            return f"Error: {error_message}"
-
-        # Return parsed text if no error
+            return f"Error: {result.get('ErrorMessage', 'Unknown error')}"
         return result["ParsedResults"][0]["ParsedText"]
-    
+
     except requests.exceptions.RequestException as e:
         return f"Request error: {e}"
     except Exception as e:
