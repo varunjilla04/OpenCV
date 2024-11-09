@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Text Recognition</title>
+</head>
+<body>
+    <h1>Upload Image for Text Recognition</h1>
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required>
+        <button type="submit">Upload</button>
+    </form>
+    <h2>Recognized Text:</h2>
+    <textarea rows="10" cols="50">{{ recognized_text }}</textarea>
+</body>
+</html>
