@@ -5,24 +5,24 @@ from io import BytesIO
 
 # Define the OCR function
 def perform_ocr(image):
-    # Convert the image to bytes and manually set the file extension
+   
     img_bytes = BytesIO()
-    image.save(img_bytes, format="PNG")  # You can choose "JPEG" or "PNG"
+    image.save(img_bytes, format="PNG") 
     img_bytes.seek(0)
 
-    # Specify the correct file type
+    
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
     }
     
-    # Send the request with the file as bytes and the correct extension
+    
     try:
         response = requests.post(
             "https://api.ocr.space/parse/image",
-            files={"image": ("image.png", img_bytes, "image/png")},  # Explicitly setting the file type
+            files={"image": ("image.png", img_bytes, "image/png")},  
             data={"apikey": "K85999022988957"}
         )
-        response.raise_for_status()  # Will raise an exception for a 4xx or 5xx error
+        response.raise_for_status()  
         result = response.json()
         
         if result.get("IsErroredOnProcessing"):
@@ -34,11 +34,11 @@ def perform_ocr(image):
     except Exception as e:
         return f"An unexpected error occurred: {e}"
 
-# Streamlit app layout and functionality
+
 st.title("Image OCR Application")
 st.write("Upload an image to extract text using OCR.")
 
-# Upload the image
+
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
