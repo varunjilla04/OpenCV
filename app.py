@@ -20,7 +20,7 @@ def perform_ocr(image):
         response = requests.post(
             "https://api.ocr.space/parse/image",
             files={"image": img_bytes},
-            data={"apikey": "YOUR_API_KEY_HERE"}  # Replace with your actual API key
+            data={"apikey": "K85999022988957"}  # Replace with your actual API key
         )
         response.raise_for_status()  # Check for HTTP errors
 
