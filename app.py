@@ -1,11 +1,12 @@
 import os
-import streamlit as st
+import io
 import requests
 from PIL import Image
-import io
+import pytesseract
+import streamlit as st
 
-# Set up OCR.Space API key
-OCR_SPACE_API_KEY = os.getenv("OCR_SPACE_API_KEY", "K85999022988957")  # Replace 'your_api_key_here' with your actual key
+# Configure Tesseract path if necessary
+# pytesseract.pytesseract.tesseract_cmd = r'<full_path_to_your_tesseract_executable>'
 
 # Define the OCR function
 def perform_ocr(image):
@@ -15,18 +16,29 @@ def perform_ocr(image):
     img_bytes = buffered.getvalue()
 
     # Send the request to OCR.Space API
-    response = requests.post(
-        "https://api.ocr.space/parse/image",
-        files={"image": img_bytes},
-        data={"apikey": OCR_SPACE_API_KEY},
-    )
+    try:
+        response = requests.post(
+            "https://api.ocr.space/parse/image",
+            files={"image": img_bytes},
+            data={"apikey": "YOUR_API_KEY_HERE"}  # Replace with your actual API key
+        )
+        response.raise_for_status()  # Check for HTTP errors
+
+        # Check the API response
+        result = response.json()
+
+        # If OCR failed or the response is in an unexpected format, handle it
+        if result.get("IsErroredOnProcessing"):
+            error_message = result.get("ErrorMessage", "Unknown error")
+            return f"Error: {error_message}"
+
+        # Return parsed text if no error
+        return result["ParsedResults"][0]["ParsedText"]
     
-    # Check the response and parse the text
-    result = response.json()
-    if result.get("IsErroredOnProcessing"):
-        return "Error: " + result.get("ErrorMessage", "Unknown error")
-    
-    return result["ParsedResults"][0]["ParsedText"]
+    except requests.exceptions.RequestException as e:
+        return f"Request error: {e}"
+    except Exception as e:
+        return f"An unexpected error occurred: {e}"
 
 # Streamlit app layout and functionality
 st.title("Image OCR Application")
